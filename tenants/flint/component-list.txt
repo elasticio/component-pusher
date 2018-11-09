@@ -1,0 +1,2 @@
+petstore-component-nodejs master git@github.com:elasticio/petstore-component-nodejs.git
+petstore-component-java master git@github.com:elasticio/petstore-component-java.git
