@@ -97,6 +97,12 @@ async function createDummyRepoIfNotExist() {
               id: TEAM_ID,
             },
           },
+          contract:{
+            data:{
+              type:'contract',
+              id:CONTRACT_ID,
+            }
+          }
         },
       },
     });
