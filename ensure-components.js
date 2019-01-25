@@ -62,16 +62,15 @@ async function createRepositories(repoLists) {
               data: {
                 type: 'team',
                 id: TEAM_ID,
-              }
+              },
             },
-              contract:{
-                data:{
-                  type:'contract',
-                  id:CONTRACT_ID,
-                }
-              }
+            contract: {
+              data: {
+                type: 'contract',
+                id: CONTRACT_ID,
+              },
             },
-
+          },
         },
       });
       return result;
@@ -97,12 +96,12 @@ async function createDummyRepoIfNotExist() {
               id: TEAM_ID,
             },
           },
-          contract:{
-            data:{
-              type:'contract',
-              id:CONTRACT_ID,
-            }
-          }
+          contract: {
+            data: {
+              type: 'contract',
+              id: CONTRACT_ID,
+            },
+          },
         },
       },
     });
