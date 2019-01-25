@@ -13,6 +13,10 @@ function process_tenant() {
 
     source $export_var_file
 
+    # Adding new line to the end of file if and only if there is no one.
+    # Since the last line will not be processed by the loop otherwise.
+    sed -i -e '$a\' $component_list_file
+
     node ensure-components.js $1
 
     # Pushes single component
@@ -60,7 +64,7 @@ function process_tenant() {
     done <&3;
     exec 3<&-;
 
-    while IFS= read -r line
+    while IFS= read -r line || [ -n "$a" ]
     do
         component=$(echo "$line" | awk '{print $1}')
         version=$(echo "$line" | awk '{print $2}')
