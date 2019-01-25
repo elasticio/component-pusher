@@ -37,13 +37,14 @@ function process_tenant() {
         git remote add ${git_remote_name} "$TEAM_NAME@$SSH_ALIAS:$component"
         git checkout "$version"
         echo "About to push the component..."
-        git push ${git_remote_name} "$version:master"
+        PUSH_RESULT=$(git push "${git_remote_name}" "$version":master 2>&1 | tail -1)
+        echo "OUTPUT=${PUSH_RESULT}"
         echo "Removing the remote..."
         git remote remove ${git_remote_name}
         popd
         latest_comp_version=$(node getComponentLatestVersion.js ${id})
         echo "Latest component version on the platform:"${latest_comp_version}
-        if [ "${latest_comp_version}" = "-1" ];
+        if [ "${latest_comp_version}" = "-1" -a "${PUSH_RESULT}" != "Everything up-to-date" ];
         then
             comp_array=(${id} "---" "Failed")
         elif [ "${latest_comp_version}" = "${comp_head_rev}" -a "${comp_version_before_push}" = "-1" ]
