@@ -3,17 +3,22 @@
 This script allows to push a set of components to set of tenants with `git`.
 
 ## Table of Contents
+ - [Description]
  - [Configuration](#configuration)
-   * [component-list.txt](#component-list.txt)
-   * [env.vars](#export.vars)
+   * [Component list](#component-list)
+   * [Environment variables](#environment-variables)
      * [SSH](#SSH)
-   * [push.sh](#push.sh)
+   * [Push script](#push-script)
  - [Usage](#usage)
  - [Logs](#logs)
 
+## Description
+
+Component pusher works in this way. It retrieves the most recent version of the component which you specify in `./tenants/{tenant_name}/component-list.txt` file, downloads it into your local temporary folder. And makes a push to a platform's git receiver. After that you will get final logs summarizing execution result. And all temporary data will be automatically erased from your local computer.  
+
 ## Configuration
 
-Bash v4+ must be installed and used by script to work (This is why shebang line was changed from `#!/bin/bash` to `#!/usr/local/bin/bash`).
+Bash v4+ must be installed and used by script to work. See the details below.
 See https://stackoverflow.com/questions/6047648/bash-4-associative-arrays-error-declare-a-invalid-option
 
 `tenants` folder contains a tree structure of folders and files where all the configurations should be specified
@@ -36,12 +41,12 @@ Here:
 * component-list.txt. Contains a list of components which should be autopushed to the tenant.
 * export.vars. Here some set of variables should be specified. See below.
 
-### component-list.txt
+### Component list
 
 Configure the file `component-list.txt` with components you want to be updated. The format is "component name on the UI" "version" "origin from github" divided by spaces (note spaces are used to separate values so don't use spaces in component name). Example: `code master git@github.com:elasticio/code-component.git`.
 This file should be created for each tenant and put into its root folder.
 
-### export.vars
+### Environment variables
 
 Before you start `push.sh` you should create and configure file "`./export.vars`" with required data (located in the root dir of each tenant).
 
@@ -49,7 +54,8 @@ Example:
 ```
 export API_URL="https://api.elastic.io"
 export TEAM_NAME="elastic"
-export TEAM_ID="MONGO_ID"
+export TEAM_ID="5bb4990ede8b1ad87a07c799"
+export CONTRACT_ID="5b4f5119ff4304374238bbef"
 export EMAIL="email@elastic.io"
 export API_KEY="api-key"
 export SSH_ALIAS="elastic-acme"
@@ -60,11 +66,17 @@ export SSH_ALIAS="elastic-acme"
 - CONTRACT_ID - contract id (get from browser url)
 - EMAIL - your email (required to do some api calls)
 - API_KEY - your api key (required to do some api calls)
-- GIT_CLONE_KEY - path to the key you want to use to clone the component from the GitHub
-- SSH_ALIAS - alias in ~/.ssh/config file
-
+- GIT_CLONE_KEY - (optional) path to the key you want to use to clone the component from the GitHub
+- SSH_ALIAS - alias in ~/.ssh/config file which corresponds to tenant's ssh config. E.g.:
+```
+  Host elastic-acme
+  HostName git.elastic.io
+  User script_team_123
+  IdentityFile ~/.ssh/acme
+  IdentitiesOnly yes
+```
 #### SSH
-**Important!** You have to make some configurations locally before launch the script.
+**Important!** You have to make some configurations locally before launching the script.
 As the script pushes components to multiple tenants, it uses different ssh keys for each tenant. It assumes that you have already configured ssh keys and aliases for it. If not, below is the list of steps to do that:
 1. Create an SSH key:
 ```bash
@@ -99,16 +111,20 @@ For each of entry you should have SSH key generated.
 * User. Team name. Should have the same value as in $TEAM_NAME env var from the [export.vars file](#export.vars). Should be created before launch the script.
 * IdentityFile. A path to the identity file. It is an SSH key file you have generated above.
 
-### push.sh
+### Push script
+
+`push.sh` script.
 
 It is a bash script that does the main work. Here are the requirements for it to work properly:
 
-* Files `component-list.txt` and `export.vars` according to the specifications mentioned above.
-* `awk` and `git` installed on your local machine.
-* Access to the desired components on elastic.io Github.
-* Access to the team you want to push the components.
-* Your ssh-key uploaded into the environment where you are pushing the components.
-* Node.js installed on your machine (required by script that does some api calls)
+- Files `component-list.txt` and `export.vars` according to the specifications mentioned above.
+- `awk` and `git` installed on your local machine.
+- Bash v4+ must be installed and used by script to work. This is why shebang line may be changed from `#!/usr/local/bin/bash` (like in the template) to something like `#!/bin/bash` or wherever an appropriate bash version is installed on your local machine.
+  See https://stackoverflow.com/questions/6047648/bash-4-associative-arrays-error-declare-a-invalid-option
+- Access to the desired components on elastic.io Github.
+- Access to the team you want to push the components.
+- Your ssh-key uploaded into the environment where you are pushing the components.
+- Node.js installed on your machine (required by script that does some api calls)
 
 ## Usage
 
@@ -117,6 +133,26 @@ Execute the script with:
 ```bash
 ./push.sh
 ```
+
+As the result of the script execution you will get summarizing logs. E.g.:
+```============================================================================================================================
+COMP NAME                      COMP ID                      LATEST VERSION                             STATUS                    
+
+============================================================================================================================                                                                                                   
+s2-component                   5c4f1e1f19a8ae0012747267     3c64cee65cfb88ab33e56d79c2d835f7728fca9d   Success                   
+petstore-component-nodejs      5c4f1e1f19a8ae0012747266     36fc9db0f0af082a6db138b5afab607db0d746a7   Success                   
+configuration-component        5c4f1e1f19a8ae0012747264     70086b29fc38a91a05c135a5b48f796f625e7314   Success                   
+smarty-streets-component       5c4f1e1f19a8ae0012747265     8beccc6f0f1492ca154a20ed325495a227b79be2   Success                   
+petstore-component-java        5c4f1e1f19a8ae0012747269     a813f137269a61e8a93344c5d457a358050e3b86   Success                   
+============================================================================================================================
+```
+
+Possible values of the `STATUS` column:
+- **Success** - the component has been successfully deployed to the platform
+- **Nothing-to-update** - the same version of the component has been already pushed to the same repository
+- **Same-comp-rev-exists** - the same version of the component has been already pushed to some other repository in the current tenant. Elastic.io platform currently allows only one instance of the same component (with the same hash) being installed at the tenant. This status means that some other team has already pushed the same version and you are not allowed to push. It is  
+- **Failed** - something went wrong while pushing the component. Check the log file or console output to investigate the reason of a failure
+
 ## Logs
 
 The script produces log files containing all the information about the deployment process.
