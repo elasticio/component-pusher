@@ -37,14 +37,20 @@ function process_tenant() {
         git remote add ${git_remote_name} "$TEAM_NAME@$SSH_ALIAS:$component"
         git checkout "$version"
         echo "About to push the component..."
-        PUSH_RESULT=$(git push "${git_remote_name}" "$version":master 2>&1 | tail -1)
-        echo "OUTPUT=${PUSH_RESULT}"
+        PUSH_RESULT=$(git push "${git_remote_name}" "$version":master 2>&1)
+        echo ${PUSH_RESULT}
+        PUSH_RESULT_LAST_LINE=$(echo ${PUSH_RESULT} | tail -1)
         echo "Removing the remote..."
         git remote remove ${git_remote_name}
         popd
         latest_comp_version=$(node getComponentLatestVersion.js ${id})
         echo "Latest component version on the platform:"${latest_comp_version}
-        if [ "${latest_comp_version}" = "-1" -a "${PUSH_RESULT}" != "Everything up-to-date" ];
+        if [ "${latest_comp_version}" = "-1" -a "${PUSH_RESULT_LAST_LINE}" = "Everything up-to-date" ];
+        then
+            comp_array=(${id} "---" "Same-comp-rev-exists")
+            # Delete component's repo from the platform. As it is automatically created by the script
+            node deleteRepo.js ${id}
+        elif [ "${PUSH_RESULT_LAST_LINE}" != "Everything up-to-date" ];
         then
             comp_array=(${id} "---" "Failed")
         elif [ "${latest_comp_version}" = "${comp_head_rev}" -a "${comp_version_before_push}" = "-1" ]
@@ -83,7 +89,7 @@ function process_tenant() {
         push_component "$1" "$component" "$version" "$origin" "$repoId"
     done < "$component_list_file"
     # Printing statistics
-    divider==============================================================
+    divider===============================================================
     divider=${divider}${divider}
     header="\n%-30s %-28s %-42s %-26s\n"
     format="%-30s %-28s %-42s %-26s\n"
