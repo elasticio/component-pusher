@@ -30,4 +30,4 @@ async function deleteRepository() {
   }
 }
 
-deleteRepository();
+deleteRepository().catch(error => console.log(`${error}`));
