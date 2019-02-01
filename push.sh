@@ -13,9 +13,14 @@ function process_tenant() {
 
     source $export_var_file
 
+    # Deleting blank lines in components list file. There will be errors when trying to create
+    # an empty git repository
+    # Here and in the next sed command '.bak' option is actual for Mac.
+    # For other systems it may not be needed
+    sed -i '.bak' '/^$/d' $component_list_file
     # Adding new line to the end of file if and only if there is no one.
     # Since the last line will not be processed by the loop otherwise.
-    sed -i -e '$a\' $component_list_file
+    sed -i '.bak' -e '$a\' $component_list_file
 
     node ensure-components.js $1
 
@@ -30,36 +35,36 @@ function process_tenant() {
         echo "About to clone $component, version $version from $origin"
         ssh-agent bash -c "ssh-add ${GIT_CLONE_KEY}; git clone ${origin} $tmp_dir_name/$component"
         pushd "$tmp_dir_name/$component" || return
-        comp_head_rev="$(git rev-parse HEAD)"
         comp_array=()
         # Create remote by alias (must be configured in ~/.ssh/config), not by URL
         echo "Adding the remote..."
         git remote add ${git_remote_name} "$TEAM_NAME@$SSH_ALIAS:$component"
         git checkout "$version"
+        comp_head_rev="$(git rev-parse HEAD)"
+        echo "Current component version: ${comp_head_rev}"
         echo "About to push the component..."
-        PUSH_RESULT=$(git push "${git_remote_name}" "$version":master 2>&1)
-        echo ${PUSH_RESULT}
-        PUSH_RESULT_LAST_LINE=$(echo ${PUSH_RESULT} | tail -1)
+        PUSH_RESULT="$(git push "${git_remote_name}" "$version":master 2>&1)"
+        echo "${PUSH_RESULT}"
+        PUSH_RESULT_LAST_LINE=$(echo "${PUSH_RESULT}" | tail -n 1 )
+        PUSH_RESULT_THIRD_LINE_FROM_END=$(echo "${PUSH_RESULT}"  | tail -n 3 | head -n 1 )
         echo "Removing the remote..."
         git remote remove ${git_remote_name}
         popd
         latest_comp_version=$(node getComponentLatestVersion.js ${id})
         echo "Latest component version on the platform:"${latest_comp_version}
-        if [ "${latest_comp_version}" = "-1" -a "${PUSH_RESULT_LAST_LINE}" = "Everything up-to-date" ];
+        if [ "${latest_comp_version}" != "-1" -a "${PUSH_RESULT_LAST_LINE}" = "Everything up-to-date" ];
         then
-            comp_array=(${id} "---" "Same-comp-rev-exists")
-            # Delete component's repo from the platform. As it is automatically created by the script
-            node deleteRepo.js ${id}
-        elif [ "${PUSH_RESULT_LAST_LINE}" != "Everything up-to-date" ];
-        then
-            comp_array=(${id} "---" "Failed")
-        elif [ "${latest_comp_version}" = "${comp_head_rev}" -a "${comp_version_before_push}" = "-1" ]
+            comp_array=(${id} ${latest_comp_version} "Everything-up-to-date")
+        # Compare strings removing all trailing and leading whitespaces (actually ALL the whitespaces are being removed, but that's OK for the comparison)
+        elif [ "${latest_comp_version}" = "${comp_head_rev}" -a "$(echo "${PUSH_RESULT_THIRD_LINE_FROM_END}" | tr -d '[:space:]')" = "$(echo "remote: Build completed successfully" | tr -d '[:space:]')" ];
         then
             comp_array=(${id} ${latest_comp_version} "Success")
         else
-            comp_array=(${id} ${latest_comp_version} "Nothing-to-update")
+            comp_array=(${id} "---" "Failed")
         fi
         tenant_map[$component]=${comp_array[@]}
+        # Delete component's repo from the platform. As it is automatically created by the script
+        node deleteRepoIfNotEmpty.js ${id}
     }
 
     # Get an array of all components (ids) available in the team
@@ -89,7 +94,7 @@ function process_tenant() {
         push_component "$1" "$component" "$version" "$origin" "$repoId"
     done < "$component_list_file"
     # Printing statistics
-    divider===============================================================
+    divider================================================================
     divider=${divider}${divider}
     header="\n%-30s %-28s %-42s %-26s\n"
     format="%-30s %-28s %-42s %-26s\n"

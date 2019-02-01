@@ -149,8 +149,7 @@ petstore-component-java        5c4f1e1f19a8ae0012747269     a813f137269a61e8a933
 
 Possible values of the `STATUS` column:
 - **Success** - the component has been successfully deployed to the platform
-- **Nothing-to-update** - the same version of the component has been already pushed to the same repository
-- **Same-comp-rev-exists** - the same version of the component has been already pushed to some other repository in the current tenant. Elastic.io platform currently allows only one instance of the same component (with the same hash) being installed at the tenant. This status means that some other team has already pushed the same version and you are not allowed to push. It is  
+- **Everything-up-to-date** - the same version of the component has been already pushed to the same repository
 - **Failed** - something went wrong while pushing the component. Check the log file or console output to investigate the reason of a failure
 
 ## Logs
