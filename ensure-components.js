@@ -149,11 +149,13 @@ function delayAndCreateReposForNotExistingComponents() {
     }));
     // list of components in the config file which are NOT pushed on the platform
     const compList = readComponentsList(process.argv[2]).filter(c => !existingComponents
-      .find(e => e === c.component));
+    .find(e => e === c.component));
     console.log('About to update components...');
     await createRepositories(compList);
     await deleteDummyRepo();
   }, 5000);
 }
 
-createDummyRepoIfNotExist().then(delayAndCreateReposForNotExistingComponents());
+createDummyRepoIfNotExist()
+  .then(delayAndCreateReposForNotExistingComponents())
+  .catch(error => console.log(`${error}`));
