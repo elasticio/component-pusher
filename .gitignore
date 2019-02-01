@@ -6,6 +6,5 @@ build
 *.ipr
 *.iws
 out
-tenants/
 logs
 node_modules/
