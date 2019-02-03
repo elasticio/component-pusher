@@ -3,6 +3,12 @@
 
 tmp_dir_name="/tmp/elasticio-components-pusher"
 
+# Function that deletes a temporary folder
+function deleteTmpFolder() {
+    echo "Cleaning up..."
+    rm -rf ${tmp_dir_name} || return
+}
+
 # Processes entire tenant, pushing the list of the components there
 function process_tenant() {
 
@@ -12,6 +18,23 @@ function process_tenant() {
     declare -A tenant_map
 
     source $export_var_file
+
+    # Check if env vars in 'export.vars' file (API key, email and Team ID) are correct.
+    # Exit if it is not.
+    echo "Check if environment variables are OK..."
+    auth_response=$(
+    curl https://api.elastic.io/v2/teams/${TEAM_ID} \
+        -u ${API_KEY}:${EMAIL} \
+        -H 'Accept: application/json' \
+        --write-out %{http_code} \
+        --silent \
+        --output /dev/null \
+    )
+    if [ ${auth_response} != "200" ];
+    then
+        echo "Environment variables in 'export.vars' file are incorrect. Check it and try again. Exit..."
+        exit 1
+    fi
 
     # Deleting blank lines in components list file. There will be errors when trying to create
     # an empty git repository
@@ -118,5 +141,4 @@ do
     # Push components to the tenant, copying logs to file named: logs/tenantName/dateTime.log
     process_tenant ${filename} 2>&1 | tee logs/${tenantName}/${now}.log
 done
-echo "Cleaning up..."
-rm -rf ${tmp_dir_name} || return
+deleteTmpFolder
