@@ -24,7 +24,7 @@ function process_tenant() {
     echo "Check if environment variables are OK..."
     auth_response=$(
     curl https://api.elastic.io/v2/teams/${TEAM_ID} \
-        -u ${API_KEY}:${EMAIL} \
+        -u ${EMAIL}:${API_KEY} \
         -H 'Accept: application/json' \
         --write-out %{http_code} \
         --silent \
@@ -35,6 +35,7 @@ function process_tenant() {
         echo "Environment variables in 'export.vars' file are incorrect. Check it and try again. Exit..."
         exit 1
     fi
+    echo "Environment variables are OK"
 
     # Deleting blank lines in components list file. There will be errors when trying to create
     # an empty git repository
@@ -66,7 +67,7 @@ function process_tenant() {
         comp_head_rev="$(git rev-parse HEAD)"
         echo "Current component version: ${comp_head_rev}"
         echo "About to push the component..."
-        PUSH_RESULT="$(git push "${git_remote_name}" "$version":master 2>&1)"
+        PUSH_RESULT="$(git push -f "${git_remote_name}" "$version":master 2>&1)"
         echo "${PUSH_RESULT}"
         PUSH_RESULT_LAST_LINE=$(echo "${PUSH_RESULT}" | tail -n 1 )
         PUSH_RESULT_THIRD_LINE_FROM_END=$(echo "${PUSH_RESULT}"  | tail -n 3 | head -n 1 )
