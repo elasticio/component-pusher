@@ -1,1 +1,0 @@
-configuration-component master git@github.com:elasticio/configuration-component.git
