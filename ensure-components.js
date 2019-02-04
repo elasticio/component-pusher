@@ -62,16 +62,15 @@ async function createRepositories(repoLists) {
               data: {
                 type: 'team',
                 id: TEAM_ID,
-              }
+              },
             },
-              contract:{
-                data:{
-                  type:'contract',
-                  id:CONTRACT_ID,
-                }
-              }
+            contract: {
+              data: {
+                type: 'contract',
+                id: CONTRACT_ID,
+              },
             },
-
+          },
         },
       });
       return result;
@@ -97,12 +96,12 @@ async function createDummyRepoIfNotExist() {
               id: TEAM_ID,
             },
           },
-          contract:{
-            data:{
-              type:'contract',
-              id:CONTRACT_ID,
-            }
-          }
+          contract: {
+            data: {
+              type: 'contract',
+              id: CONTRACT_ID,
+            },
+          },
         },
       },
     });
@@ -150,11 +149,16 @@ function delayAndCreateReposForNotExistingComponents() {
     }));
     // list of components in the config file which are NOT pushed on the platform
     const compList = readComponentsList(process.argv[2]).filter(c => !existingComponents
-      .find(e => e === c.component));
+    .find(e => e === c.component));
     console.log('About to update components...');
     await createRepositories(compList);
     await deleteDummyRepo();
   }, 5000);
 }
 
-createDummyRepoIfNotExist().then(delayAndCreateReposForNotExistingComponents());
+createDummyRepoIfNotExist()
+  .then(delayAndCreateReposForNotExistingComponents())
+  .catch((error) => {
+    console.log(`${error}`);
+    process.exit(1);
+  });
