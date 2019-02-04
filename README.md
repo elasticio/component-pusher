@@ -117,6 +117,7 @@ For each of entry you should have SSH key generated.
 
 It is a bash script that does the main work. Here are the requirements for it to work properly:
 
+- Node.js (v8+) should be installed. See https://nodejs.org/en/download/package-manager/ for example.
 - Files `component-list.txt` and `export.vars` according to the specifications mentioned above.
 - `awk` and `git` installed on your local machine.
 - Bash v4+ must be installed and used by script to work. This is why shebang line may be changed from `#!/usr/local/bin/bash` (like in the template) to something like `#!/bin/bash` or wherever an appropriate bash version is installed on your local machine.
