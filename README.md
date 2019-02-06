@@ -159,3 +159,7 @@ The script produces log files containing all the information about the deploymen
 It stores in the folder `logs/tenantName/%DateTime%.log`, where DateTime - represents DateTime when script has been launched.
 E.g. `logs/flint/2018-11-06T18-38-21.log`
 All the statistics is available at the end of each log file.
+
+## Current Limitations
+
+Currently empty lines in `component-list.txt` file may cause error messages in logs, so make sure you don't have empty lines before start component-pusher.
