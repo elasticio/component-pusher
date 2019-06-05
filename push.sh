@@ -23,8 +23,9 @@ function process_tenant() {
     # Exit if it is not.
     echo "Check if environment variables are OK..."
     auth_response=$(
-    curl https://api.elastic.io/v2/teams/${TEAM_ID} \
+    curl ${API_URL}/v2/teams/${TEAM_ID} \
         -u ${EMAIL}:${API_KEY} \
+        -k \
         -H 'Accept: application/json' \
         --write-out %{http_code} \
         --silent \

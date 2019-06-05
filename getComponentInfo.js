@@ -1,5 +1,8 @@
+"strict mode";
+
 const axios = require('axios');
 const fs = require('fs');
+https = require('https');
 
 const {
   API_URL,
@@ -14,6 +17,9 @@ const request = axios.create({
   headers: {
     Authorization: `Basic ${auth}`,
   },
+  httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+      })
 });
 
 async function readTeamCompIds() {

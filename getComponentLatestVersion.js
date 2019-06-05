@@ -1,4 +1,5 @@
 const axios = require('axios');
+https = require('https');
 
 const {
   API_URL,
@@ -12,6 +13,9 @@ const request = axios.create({
   headers: {
     Authorization: `Basic ${auth}`,
   },
+  httpsAgent: new https.Agent({
+          rejectUnauthorized: false
+        })
 });
 
 async function getComponentLatestVersion() {
