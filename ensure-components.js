@@ -3,6 +3,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const assert = require('assert');
 const axios = require('axios');
+https = require('https');
 
 let dummyRepoCreated = false;
 let dummyRepoId = '';
@@ -29,6 +30,9 @@ const request = axios.create({
   headers: {
     Authorization: `Basic ${auth}`,
   },
+  httpsAgent: new https.Agent({
+      rejectUnauthorized: false
+    })
 });
 
 // Reads the list of the existing components
@@ -83,28 +87,30 @@ async function createDummyRepoIfNotExist() {
   const { data } = (await request.get(`/v2/teams/${TEAM_ID}`)).data;
   if (!data.relationships.components) {
     console.log('No component repository found in the contract. Creating dummy one...');
-    const { data: result } = await request.post('/v2/components', {
-      data: {
-        type: 'component',
-        attributes: {
-          name: 'dummy-component-pusher',
-        },
-        relationships: {
-          team: {
-            data: {
-              type: 'team',
-              id: TEAM_ID,
-            },
-          },
-          contract: {
-            data: {
-              type: 'contract',
-              id: CONTRACT_ID,
-            },
-          },
-        },
-      },
-    });
+    const body = {      data: {
+                         type: 'component',
+                         attributes: {
+                           name: 'dummy-component-pusher',
+                         },
+                         relationships: {
+                           team: {
+                             data: {
+                               type: 'team',
+                               id: TEAM_ID,
+                             },
+                           },
+                           contract: {
+                             data: {
+                               type: 'contract',
+                               id: CONTRACT_ID,
+                             },
+                           },
+                         },
+                       },
+                     };
+
+    console.log('body', JSON.stringify(body));
+    const { data: result } = await request.post('/v2/components', body);
     dummyRepoId = result.data.id;
     dummyRepoCreated = true;
     console.log('Successfully created dummy repository');
