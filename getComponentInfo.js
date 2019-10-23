@@ -1,8 +1,6 @@
-"strict mode";
-
 const axios = require('axios');
 const fs = require('fs');
-https = require('https');
+const https = require('https');
 
 const {
   API_URL,
@@ -18,14 +16,9 @@ const request = axios.create({
     Authorization: `Basic ${auth}`,
   },
   httpsAgent: new https.Agent({
-        rejectUnauthorized: false
-      })
+    rejectUnauthorized: false,
+  }),
 });
-
-async function readTeamCompIds() {
-  const { data } = (await request.get(`/v2/teams/${TEAM_ID}`)).data;
-  data.relationships.components.data.forEach(entry => console.log(entry.id));
-}
 
 async function getAllComponentIds() {
   const { data } = (await request.get(`/v2/teams/${TEAM_ID}`)).data;
@@ -52,7 +45,9 @@ function readComponentsList() {
 async function findCommonComponents() {
   const componentsToPush = await readComponentsList();
   const allComps = await getAllComponentIds();
+  // eslint-disable-next-line no-restricted-syntax
   for (const allComp of allComps) {
+    // eslint-disable-next-line no-restricted-syntax
     for (const componentToPush of componentsToPush) {
       if (allComp.attributes.name === componentToPush.component) {
         console.log(`${allComp.id}:${allComp.attributes.name}`);

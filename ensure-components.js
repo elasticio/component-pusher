@@ -3,7 +3,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const assert = require('assert');
 const axios = require('axios');
-https = require('https');
+const https = require('https');
 
 let dummyRepoCreated = false;
 let dummyRepoId = '';
@@ -31,8 +31,8 @@ const request = axios.create({
     Authorization: `Basic ${auth}`,
   },
   httpsAgent: new https.Agent({
-      rejectUnauthorized: false
-    })
+    rejectUnauthorized: false,
+  }),
 });
 
 // Reads the list of the existing components
@@ -87,27 +87,28 @@ async function createDummyRepoIfNotExist() {
   const { data } = (await request.get(`/v2/teams/${TEAM_ID}`)).data;
   if (!data.relationships.components) {
     console.log('No component repository found in the contract. Creating dummy one...');
-    const body = {      data: {
-                         type: 'component',
-                         attributes: {
-                           name: 'dummy-component-pusher',
-                         },
-                         relationships: {
-                           team: {
-                             data: {
-                               type: 'team',
-                               id: TEAM_ID,
-                             },
-                           },
-                           contract: {
-                             data: {
-                               type: 'contract',
-                               id: CONTRACT_ID,
-                             },
-                           },
-                         },
-                       },
-                     };
+    const body = {
+      data: {
+        type: 'component',
+        attributes: {
+          name: 'dummy-component-pusher',
+        },
+        relationships: {
+          team: {
+            data: {
+              type: 'team',
+              id: TEAM_ID,
+            },
+          },
+          contract: {
+            data: {
+              type: 'contract',
+              id: CONTRACT_ID,
+            },
+          },
+        },
+      },
+    };
 
     console.log('body', JSON.stringify(body));
     const { data: result } = await request.post('/v2/components', body);
@@ -122,7 +123,7 @@ async function createDummyRepoIfNotExist() {
 function deleteDummyRepo() {
   if (dummyRepoCreated && dummyRepoId !== '') {
     console.log(`Trying to delete dummy repo with id:${dummyRepoId}...`);
-    const result = request.delete(`/v2/components/${dummyRepoId}`, {
+    request.delete(`/v2/components/${dummyRepoId}`, {
       data: {
         type: 'component',
         attributes: {
@@ -155,7 +156,7 @@ function delayAndCreateReposForNotExistingComponents() {
     }));
     // list of components in the config file which are NOT pushed on the platform
     const compList = readComponentsList(process.argv[2]).filter(c => !existingComponents
-    .find(e => e === c.component));
+      .find(e => e === c.component));
     console.log('About to update components...');
     await createRepositories(compList);
     await deleteDummyRepo();

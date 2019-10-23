@@ -1,5 +1,5 @@
 const axios = require('axios');
-https = require('https');
+const https = require('https');
 
 const {
   API_URL,
@@ -14,8 +14,8 @@ const request = axios.create({
     Authorization: `Basic ${auth}`,
   },
   httpsAgent: new https.Agent({
-          rejectUnauthorized: false
-        })
+    rejectUnauthorized: false,
+  }),
 });
 
 // Here only empty repos will be deleted

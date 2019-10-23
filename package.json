@@ -1,6 +1,6 @@
 {
   "name": "push-components",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "## component-list.txt",
   "main": "ensure-component.js",
   "scripts": {
@@ -10,13 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@octokit/rest": "^15.15.1",
-    "axios": "^0.18.0",
-    "lodash": "^4.17.11"
+    "@octokit/rest": "15.15.1",
+    "axios": "0.18.0",
+    "lodash": "4.17.11"
   },
   "devDependencies": {
-    "eslint": "^5.6.1",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0"
+    "eslint": "5.6.1",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-plugin-import": "2.14.0"
   }
 }
