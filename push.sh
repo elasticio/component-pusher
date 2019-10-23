@@ -88,8 +88,6 @@ function process_tenant() {
             comp_array=(${id} "---" "Failed")
         fi
         tenant_map[$component]=${comp_array[@]}
-        # Delete component's repo from the platform. As it is automatically created by the script
-        node deleteRepoIfNotEmpty.js ${id}
     }
 
     # Get an array of all components (ids) available in the team
